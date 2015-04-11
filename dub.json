@@ -1,6 +1,8 @@
 {
 	"name": "numeric",
 	"description": "Automatic differentiation and L-BFGS implementation in the D Programming Language.",
+	"version": "0.0.1",
+	"homepage":"https://github.com/lempiji/numeric",
 	"copyright": "Copyright © 2015, lempiji",
 	"authors": ["lempiji"],
 	"dependencies": {
