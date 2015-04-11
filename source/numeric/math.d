@@ -152,6 +152,33 @@ T sumsq(T)(in T[] xs) @safe @nogc pure nothrow
     assert(sy == 0.56);
 }
 
+T sqrt(T)(in T x) @safe @nogc pure nothrow
+{
+    static if (is(T : Variable!(U, N), U, size_t N))
+    {
+        const t = std.math.sqrt(x.a);
+        T y = void;
+        y.d[] = x.d[] * (0.5 / t);
+        y.a = t;
+        return y;
+    }
+    else
+        return std.math.sqrt(x);
+}
+@safe pure nothrow unittest
+{
+    alias Var = Variable!(double, 2);
+    auto x = Var(2.0, 0);
+    double y = 2.0;
+
+    auto z = sqrt(x);
+    auto w = sqrt(y);
+
+    assert(z.a == w);
+    assert(std.math.approxEqual(z.d[0], 1 / (2 * w)));
+    assert(std.math.approxEqual(z.d[1], 0));
+}
+
 T exp(T)(in T x) @safe @nogc pure nothrow
 {
     static if (is(T : Variable!(U, N), U, size_t N))
@@ -179,6 +206,165 @@ T exp(T)(in T x) @safe @nogc pure nothrow
     assert(std.math.approxEqual(z.d[1], 0));
 }
 
+T log(T)(in T x) @safe @nogc pure nothrow
+{
+    static if (is(T : Variable!(U, N), U, size_t N))
+    {
+        T y = void;
+        y.d[] = x.d[] / x.a;
+        y.a = std.math.log(x.a);
+        return y;
+    }
+    else
+        return std.math.log(x);
+}
+@safe pure nothrow unittest
+{
+    alias Var = Variable!(double, 2);
+    auto x = Var(2.0, 0);
+    double y = 2.0;
+
+    auto z = log(x);
+    auto w = log(y);
+
+    assert(z.a == w);
+    assert(std.math.approxEqual(z.d[0], 0.5));
+    assert(std.math.approxEqual(z.d[1], 0));
+}
+
+T sin(T)(in T x) @safe @nogc pure nothrow
+{
+    static if (is(T : Variable!(U, N), U, size_t N))
+    {
+        T y = void;
+        y.d[] = std.math.cos(x.a) * x.d[];
+        y.a = std.math.sin(x.a);
+        return y;
+    }
+    else
+        return std.math.sin(x);
+}
+@safe pure nothrow unittest
+{
+    alias Var = Variable!(double, 2);
+    auto x = Var(2.0, 0);
+    double y = 2.0;
+
+    auto z = sin(x);
+    auto w = sin(y);
+
+    assert(std.math.approxEqual(z.a, 0.909297427));
+    assert(std.math.approxEqual(z.d[0], -0.416146837));
+    assert(std.math.approxEqual(z.d[1], 0));
+    assert(std.math.approxEqual(w, 0.909297427));
+}
+
+T cos(T)(in T x) @safe @nogc pure nothrow
+{
+    static if (is(T : Variable!(U, N), U, size_t N))
+    {
+        T y = void;
+        y.d[] = -std.math.sin(x.a) * x.d[];
+        y.a = std.math.cos(x.a);
+        return y;
+    }
+    else
+        return std.math.cos(x);
+}
+@safe pure nothrow unittest
+{
+    alias Var = Variable!(double, 2);
+    auto x = Var(2.0, 0);
+    double y = 2.0;
+
+    auto z = cos(x);
+    auto w = cos(y);
+
+    assert(std.math.approxEqual(z.a, -0.416146837));
+    assert(std.math.approxEqual(z.d[0], -0.909297427));
+    assert(std.math.approxEqual(z.d[1], 0));
+    assert(std.math.approxEqual(w, -0.416146837));
+}
+
+T tan(T)(in T x) @safe @nogc pure nothrow
+{
+    static if (is(T : Variable!(U, N), U, size_t N))
+    {
+        T y = void;
+        auto t = std.math.tan(x.a);
+        y.d[] = (1 + t * t) * x.d[];
+        y.a = t;
+        return y;
+    }
+    else
+        return std.math.tan(x);
+}
+@safe pure nothrow unittest
+{
+    alias Var = Variable!(double, 2);
+    auto x = Var(2.0, 0);
+    double y = 2.0;
+
+    auto z = tan(x);
+    auto w = tan(y);
+
+    assert(std.math.approxEqual(z.a, w));
+    assert(std.math.approxEqual(z.d[0], 1 + w * w));
+    assert(std.math.approxEqual(z.d[1], 0));
+}
+
+T sinh(T)(in T x) @safe @nogc pure nothrow
+{
+    static if (is(T : Variable!(U, N), U, size_t N))
+    {
+        T y = void;
+        y.d[] = std.math.cosh(x.a) * x.d[];
+        y.a = std.math.sinh(x.a);
+        return y;
+    }
+    else
+        return std.math.sinh(x);
+}
+@safe pure nothrow unittest
+{
+    alias Var = Variable!(double, 2);
+    auto x = Var(1.0, 0);
+    double y = 1.0;
+
+    auto z = sinh(x);
+    auto w = sinh(y);
+
+    assert(z.a == w);
+    assert(std.math.approxEqual(z.d[0], std.math.cosh(1.0)));
+    assert(std.math.approxEqual(z.d[1], 0));
+}
+
+T cosh(T)(in T x) @safe @nogc pure nothrow
+{
+    static if (is(T : Variable!(U, N), U, size_t N))
+    {
+        T y = void;
+        y.d[] = std.math.sinh(x.a) * x.d[];
+        y.a = std.math.cosh(x.a);
+        return y;
+    }
+    else
+        return std.math.cosh(x);
+}
+@safe pure nothrow unittest
+{
+    alias Var = Variable!(double, 2);
+    auto x = Var(1.0, 0);
+    double y = 1.0;
+
+    auto z = cosh(x);
+    auto w = cosh(y);
+
+    assert(z.a == w);
+    assert(std.math.approxEqual(z.d[0], std.math.sinh(1.0)));
+    assert(std.math.approxEqual(z.d[1], 0));
+}
+
 T tanh(T)(in T x) @safe @nogc pure nothrow
 {
     static if (is(T : Variable!(U, N), U, size_t N))
@@ -203,5 +389,84 @@ T tanh(T)(in T x) @safe @nogc pure nothrow
 
     assert(z.a == w);
     assert(std.math.approxEqual(z.d[0], 1 - w * w));
+    assert(std.math.approxEqual(z.d[1], 0));
+}
+
+
+T asinh(T)(in T x) @safe @nogc pure nothrow
+{
+    static if (is(T : Variable!(U, N), U, size_t N))
+    {
+        T y = void;
+        y.d[] = x.d[] / std.math.sqrt(x.a * x.a + 1);
+        y.a = std.math.asinh(x.a);
+        return y;
+    }
+    else
+        return std.math.asinh(x);
+}
+@safe pure nothrow unittest
+{
+    alias Var = Variable!(double, 2);
+    auto x = Var(0.5, 0);
+    double y = 0.5;
+
+    auto z = asinh(x);
+    auto w = asinh(y);
+
+    assert(z.a == w);
+    assert(std.math.approxEqual(z.d[0], 0.894427));
+    assert(std.math.approxEqual(z.d[1], 0));
+}
+
+T acosh(T)(in T x) @safe @nogc pure nothrow
+{
+    static if (is(T : Variable!(U, N), U, size_t N))
+    {
+        T y = void;
+        y.d[] = x.d[] / std.math.sqrt(x.a * x.a - 1);
+        y.a = std.math.acosh(x.a);
+        return y;
+    }
+    else
+        return std.math.acosh(x);
+}
+@safe pure nothrow unittest
+{
+    alias Var = Variable!(double, 2);
+    auto x = Var(1.5, 0);
+    double y = 1.5;
+
+    auto z = acosh(x);
+    auto w = acosh(y);
+
+    assert(z.a == w);
+    assert(std.math.approxEqual(z.d[0], 0.894427));
+    assert(std.math.approxEqual(z.d[1], 0));
+}
+
+T atanh(T)(in T x) @safe @nogc pure nothrow
+{
+    static if (is(T : Variable!(U, N), U, size_t N))
+    {
+        T y = void;
+        y.d[] = x.d[] / (1 - x.a * x.a);
+        y.a = std.math.atanh(x.a);
+        return y;
+    }
+    else
+        return std.math.atanh(x);
+}
+@safe pure nothrow unittest
+{
+    alias Var = Variable!(double, 2);
+    auto x = Var(0.5, 0);
+    double y = 0.5;
+
+    auto z = atanh(x);
+    auto w = atanh(y);
+
+    assert(z.a == w);
+    assert(std.math.approxEqual(z.d[0], 1.33333));
     assert(std.math.approxEqual(z.d[1], 0));
 }
