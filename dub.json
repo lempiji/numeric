@@ -1,0 +1,8 @@
+{
+	"name": "numeric",
+	"description": "Automatic differentiation and L-BFGS implementation in the D Programming Language.",
+	"copyright": "Copyright © 2015, lempiji",
+	"authors": ["lempiji"],
+	"dependencies": {
+	}
+}
