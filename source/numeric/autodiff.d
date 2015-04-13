@@ -2,7 +2,6 @@ module numeric.autodiff;
 
 struct Variable(T, size_t N)
 {
-    alias VarTN = Variable!(T, N);
 public:
     this(T val) @safe @nogc pure nothrow
     {
@@ -153,6 +152,11 @@ public:
     T a;
 }
 
+@safe pure nothrow unittest
+{
+    alias Var = Variable!(double, 3);
+    auto x = Var(1);
+}
 @safe pure nothrow unittest
 {
     alias Var = Variable!(double, 2);

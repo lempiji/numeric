@@ -286,3 +286,28 @@ unittest
     assert(result.firstCost > 30);
     assert(result.finalCost < 1e-10);
 }
+
+unittest
+{
+    import numeric.functions;
+
+    auto solver = new SimpleSolver!(double, 3);
+    solver.options.linesearch.type = LineSearchType.StrongWolfe;
+    solver.options.linesearch.maxIterations = 10;
+    solver.options.estimateStepSize = true;
+    solver.options.maxIterations = 50;
+
+    RosenBrockFunction fn;
+    solver.setNumericDiffCost(fn);
+
+    auto x = new double[3];
+    x[0] = -1.2;
+    x[1] = 0.4;
+    x[2] = -0.1;
+    auto result = solver.solve(x);
+
+    assert(!result.success);
+    assert(result.iterations.length == 50);
+    assert(result.firstCost > 30);
+    assert(result.finalCost < 5);
+}

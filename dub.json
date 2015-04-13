@@ -6,5 +6,16 @@
 	"copyright": "Copyright © 2015, lempiji",
 	"authors": ["lempiji"],
 	"dependencies": {
-	}
+	},
+	"configurations": [
+		{
+			"name": "numeric",
+			"targetType": "library"
+		},
+		{
+			"name": "benchmark-autodiff",
+			"targetType": "executable",
+			"mainSourceFile": "benchmark/autodiff.d"
+		}
+	]
 }

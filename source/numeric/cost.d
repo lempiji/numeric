@@ -57,43 +57,33 @@ private:
 
 unittest
 {
-    static struct Func
-    {
-        T opCall(T)(in T[] x)
-        {
-            return x[0] * x[0] + x[1] * x[1] + x[0] * x[1];
-        }
-    }
+    import numeric.functions;
 
-    Func fn;
-    CostFunction!(double, 2) cost = new AutoDiffCostFunction!(Func, double, 2)(fn);
+    RosenBrockFunction fn;
+    CostFunction!(double, 2) cost = new AutoDiffCostFunction!(RosenBrockFunction, double, 2)(fn);
+
     auto x = new double[2];
-    x[0] = 0.5;
-    x[1] = 2;
+    x[0] = 1;
+    x[1] = 1;
     auto y = cost.evaluate(x, null);
-    assert(y == 5.25);
+    assert(y == 0);
 }
 unittest
 {
-    static struct Func
-    {
-        T opCall(T)(in T[] x)
-        {
-            return x[0] * x[0] + x[1] * x[1] + x[0] * x[1];
-        }
-    }
+    import numeric.functions;
 
-    Func fn;
-    CostFunction!(double, 2) cost = new AutoDiffCostFunction!(Func, double, 2)(fn);
+    RosenBrockFunction fn;
+    CostFunction!(double, 2) cost = new AutoDiffCostFunction!(RosenBrockFunction, double, 2)(fn);
+
     auto x = new double[2];
-    x[0] = 0.5;
-    x[1] = 2;
+    x[0] = 1;
+    x[1] = 1;
     auto g = new double[2];
     g[] = 0;
     auto y = cost.evaluate(x, g);
-    assert(y == 5.25);
-    assert(g[0] == 3);
-    assert(g[1] == 4.5);
+    assert(y == 0);
+    assert(g[0] == 0);
+    assert(g[1] == 0);
 }
 
 /**
@@ -134,4 +124,36 @@ public:
 private:
     TFunc _func;
     T[] _x;
+}
+
+unittest
+{
+    import numeric.functions;
+
+    RosenBrockFunction fn;
+    CostFunction!(double, 2) cost = new NumericDiffCostFunction!(RosenBrockFunction, double, 2)(fn);
+
+    auto x = new double[2];
+    x[0] = 1;
+    x[1] = 1;
+    auto y = cost.evaluate(x, null);
+    assert(y == 0);
+}
+unittest
+{
+    import numeric.functions;
+    import std.numeric: approxEqual;
+
+    RosenBrockFunction fn;
+    CostFunction!(double, 2) cost = new NumericDiffCostFunction!(RosenBrockFunction, double, 2)(fn);
+
+    auto x = new double[2];
+    x[0] = 1;
+    x[1] = 1;
+    auto g = new double[2];
+    g[] = 0;
+    auto y = cost.evaluate(x, g);
+    assert(y == 0);
+    assert(approxEqual(g[0], 0));
+    assert(approxEqual(g[1], 0));
 }

@@ -7,3 +7,7 @@ __dummy.html
 *.lib
 __test__library__.exe
 dub.selections.json
+*.lst
+*.exe
+trace.def
+*.log
