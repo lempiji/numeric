@@ -41,13 +41,53 @@ auto dotProduct(T, U)(in T[] a, in U[] b)
 {
     static if (is(T : Variable!(S, N), S, size_t N) || is(U : Variable!(W, M), W, size_t M))
     {
-        import std.algorithm : min;
-        auto t0 = a[0] * b[0];
-        foreach (i; 1 .. min(a.length, b.length))
+        assert(a.length == b.length);
+
+    	import std.traits;
+        alias Q = Unqual!(typeof(T.init * U.init));
+        auto sum0 = Q(0), sum1 = Q(0);
+
+        const all_endp = a.length;
+        const smallblock_endp = all_endp & ~3;
+        const bigblock_endp = all_endp & ~15;
+
+    	size_t i = 0;
+        for (; i != bigblock_endp; i += 16)
         {
-            t0 += a[i] * b[i];
+            sum0 += a[i + 0] * b[i + 0];
+            sum1 += a[i + 1] * b[i + 1];
+            sum0 += a[i + 2] * b[i + 2];
+            sum1 += a[i + 3] * b[i + 3];
+            sum0 += a[i + 4] * b[i + 4];
+            sum1 += a[i + 5] * b[i + 5];
+            sum0 += a[i + 6] * b[i + 6];
+            sum1 += a[i + 7] * b[i + 7];
+            sum0 += a[i + 8] * b[i + 8];
+            sum1 += a[i + 9] * b[i + 9];
+            sum0 += a[i + 10] * b[i + 10];
+            sum1 += a[i + 11] * b[i + 11];
+            sum0 += a[i + 12] * b[i + 12];
+            sum1 += a[i + 13] * b[i + 13];
+            sum0 += a[i + 14] * b[i + 14];
+            sum1 += a[i + 15] * b[i + 15];
         }
-        return t0;
+
+        for (; i != smallblock_endp; i += 4)
+        {
+            sum0 += a[i + 0] * b[i + 0];
+            sum1 += a[i + 1] * b[i + 1];
+            sum0 += a[i + 2] * b[i + 2];
+            sum1 += a[i + 3] * b[i + 3];
+        }
+
+        sum0 += sum1;
+
+        for (; i != all_endp; ++i)
+        {
+            sum0 += a[i] * b[i];
+        }
+
+        return sum0;
     }
     else
         return std.numeric.dotProduct(a, b);
@@ -93,10 +133,27 @@ unittest
     assert(z.d[0] == 0);
     assert(z.d[1] == 1);
     assert(z.d[2] == 2);
+
+    auto w = dotProduct(ys, xs);
+    assert(z.a == w.a);
+    assert(z.d[0] == w.d[0]);
+    assert(z.d[1] == w.d[1]);
+    assert(z.d[2] == w.d[2]);
+}
+unittest
+{
+    alias Var = Variable!(double, 1000);
+    auto xs = new Var[1000];
+    foreach (i; 0 .. xs.length) xs[i] = Var(i, i);
+
+    auto y = dotProduct(xs, xs);
+    assert(y.a == 332833500);
+    foreach (i; 0 .. xs.length) assert(y.d[i] == 2 * i);
 }
 
 T sum(T)(in T[] xs) @safe @nogc pure nothrow
 {
+    assert(xs.length > 0);
     T y = xs[0];
     foreach (i; 1 .. xs.length) y += xs[i];
     return y;
@@ -125,6 +182,7 @@ T sum(T)(in T[] xs) @safe @nogc pure nothrow
 
 T sumsq(T)(in T[] xs) @safe @nogc pure nothrow
 {
+    assert(xs.length > 0);
     T y = square(xs[0]);
     foreach (i; 1 .. xs.length) y += square(xs[i]);
     return y;

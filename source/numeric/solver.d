@@ -5,6 +5,7 @@ private import numeric.autodiff;
 private import numeric.linesearch;
 
 private import std.math: sqrt;
+private import std.numeric: dotProduct;
 
 /**
  *L-BFGS Solver
@@ -206,7 +207,7 @@ public:
             }
 
             //prepare for a next
-            loop++;
+            ++loop;
             step = _options.estimateStepSize
                 ? 1.0 / sqrt(dotProduct(sv, sv))
                 : _options.initialStepSize;
@@ -229,7 +230,7 @@ struct SolverOptions(T)
     T gradientTolerance = 1e-10;
 
     bool estimateStepSize = false;
-    T initialStepSize = 1;
+    T initialStepSize = 1.0;
 
     LineSearchOptions!T linesearch;
 }

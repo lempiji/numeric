@@ -1,7 +1,6 @@
 module numeric.linesearch;
 
 private import numeric.cost;
-private import std.numeric : dotProduct;
 
 enum LineSearchType
 {
@@ -17,13 +16,10 @@ struct LineSearchOptions(T)
 
     size_t maxIterations = 20;
 
-    T initialStepSize = 1;
+    T initialStepSize = 1.0;
 
     T wolfe = 0.9;
     T armijo = 1e-4;
-
-    T increment = 2.1;
-    T decrement = 0.5;
 }
 
 struct LineSearchResult(T)
@@ -60,21 +56,24 @@ public:
 
     Result search(in T[] x, in T[] g, in T[] d, in T f0, T[] xn, T[] gn, T step)
     {
-        Result result;
+        Result result = void;
+        result.numIterations = 0;
         result.success = false;
+        result.stepSize = step;
 
+        import std.numeric : dotProduct;
         immutable ginit = dotProduct(g, d);
         immutable c_armijo = _options.armijo * ginit;
         immutable c_wolfe = _options.wolfe * ginit;
-        immutable inc = _options.increment;
-        immutable dec = _options.decrement;
         immutable type = _options.type;
-        immutable bulk = type != LineSearchType.Armijo && _options.bulkEvaluate;
+        immutable bulk = _options.bulkEvaluate;
 
+        enum inc = 2.1;
+        enum dec = 0.5;
         T fx;
         foreach (i; 0 .. _options.maxIterations)
         {
-            result.numIterations++;
+            ++result.numIterations;
 
             xn[] = x[] + step * d[];
             fx = bulk
@@ -87,9 +86,10 @@ public:
                 step *= dec;
                 continue;
             }
+
             if (type == LineSearchType.Armijo)
             {
-                _cost.evaluate(xn, gn); //calc gradient when the Armijo method
+                if (!bulk) _cost.evaluate(xn, gn); //calc gradient when the Armijo method
                 result.success = true;
                 break;
             }
@@ -152,6 +152,37 @@ unittest
     {
         searcher.options.type = t;
         searcher.options.maxIterations = 5;
+        searcher.setCostFunction(cost);
+
+        auto x = new double[2];
+        auto g = new double[2];
+        auto xn = new double[2];
+        auto gn = new double[2];
+        auto d = new double[2];
+
+        x[] = 0;
+        auto f = cost.evaluate(x, g);
+        d[] = -g[];
+
+        auto result = searcher.search(x, g, d, f, xn, gn);
+
+        assert(result.success);
+        assert(result.numIterations <= 5);
+        assert(result.stepSize > 0);
+    }
+}
+unittest
+{
+    import numeric.functions;
+    RosenBrockFunction fn;
+    auto cost = new AutoDiffCostFunction!(RosenBrockFunction, double, 2)(fn);
+
+    auto searcher = new BackTrackLineSearcher!(double, 2);
+    foreach (t; [LineSearchType.Armijo, LineSearchType.Wolfe, LineSearchType.StrongWolfe])
+    {
+        searcher.options.type = t;
+        searcher.options.maxIterations = 5;
+        searcher.options.bulkEvaluate = false;
         searcher.setCostFunction(cost);
 
         auto x = new double[2];
