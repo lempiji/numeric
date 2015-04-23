@@ -52,42 +52,42 @@ auto dotProduct(T, U)(in T[] a, in U[] b)
         const bigblock_endp = all_endp & ~15;
 
     	size_t i = 0;
-        for (; i != bigblock_endp; i += 16)
+        auto ap = a[];
+        auto bp = b[];
+        for (; i != bigblock_endp; i += 16, ap = ap[16 .. $], bp = bp[16 .. $])
         {
-            sum0 += a[i + 0] * b[i + 0];
-            sum1 += a[i + 1] * b[i + 1];
-            sum0 += a[i + 2] * b[i + 2];
-            sum1 += a[i + 3] * b[i + 3];
-            sum0 += a[i + 4] * b[i + 4];
-            sum1 += a[i + 5] * b[i + 5];
-            sum0 += a[i + 6] * b[i + 6];
-            sum1 += a[i + 7] * b[i + 7];
-            sum0 += a[i + 8] * b[i + 8];
-            sum1 += a[i + 9] * b[i + 9];
-            sum0 += a[i + 10] * b[i + 10];
-            sum1 += a[i + 11] * b[i + 11];
-            sum0 += a[i + 12] * b[i + 12];
-            sum1 += a[i + 13] * b[i + 13];
-            sum0 += a[i + 14] * b[i + 14];
-            sum1 += a[i + 15] * b[i + 15];
+            sum0 += ap[0] * bp[0];
+            sum1 += ap[1] * bp[1];
+            sum0 += ap[2] * bp[2];
+            sum1 += ap[3] * bp[3];
+            sum0 += ap[4] * bp[4];
+            sum1 += ap[5] * bp[5];
+            sum0 += ap[6] * bp[6];
+            sum1 += ap[7] * bp[7];
+            sum0 += ap[8] * bp[8];
+            sum1 += ap[9] * bp[9];
+            sum0 += ap[10] * bp[10];
+            sum1 += ap[11] * bp[11];
+            sum0 += ap[12] * bp[12];
+            sum1 += ap[13] * bp[13];
+            sum0 += ap[14] * bp[14];
+            sum1 += ap[15] * bp[15];
         }
 
-        for (; i != smallblock_endp; i += 4)
+        for (; i != smallblock_endp; i += 4, ap = ap[4 .. $], bp = bp[4 .. $])
         {
-            sum0 += a[i + 0] * b[i + 0];
-            sum1 += a[i + 1] * b[i + 1];
-            sum0 += a[i + 2] * b[i + 2];
-            sum1 += a[i + 3] * b[i + 3];
+            sum0 += ap[0] * bp[0];
+            sum1 += ap[1] * bp[1];
+            sum0 += ap[2] * bp[2];
+            sum1 += ap[3] * bp[3];
         }
 
-        sum0 += sum1;
-
-        for (; i != all_endp; ++i)
+        for (; i != all_endp; ++i, ap = ap[1 .. $], bp = bp[1 .. $])
         {
-            sum0 += a[i] * b[i];
+            sum0 += ap[0] * bp[0];
         }
 
-        return sum0;
+        return sum0 + sum1;
     }
     else
         return std.numeric.dotProduct(a, b);
