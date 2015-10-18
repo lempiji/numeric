@@ -154,9 +154,16 @@ public:
 
 @safe pure nothrow unittest
 {
+    import std.algorithm;
     alias Var = Variable!(double, 3);
     auto x = Var(1);
+    assert(x.a == 1);
+    assert(equal(x.d[], [0.0, 0.0, 0.0]));
+    x = 2;
+    assert(x.a == 2);
+    assert(equal(x.d[], [0.0, 0.0, 0.0]));
 }
+
 @safe pure nothrow unittest
 {
     alias Var = Variable!(double, 2);

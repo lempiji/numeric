@@ -47,7 +47,6 @@ public:
     Result solve(T[] x)
     {
         Result result;
-        result.success = false;
 
         _searcher.options = _options.linesearch;
         _searcher.setCostFunction(_cost);
@@ -98,7 +97,7 @@ public:
         if (gnorm < xnorm * _options.gradientTolerance)
         {
             //already minimized
-            result.success = true;
+            result.status = SolverResultStatus.AlreadyMinimized;
             result.finalCost = fx;
             return result;
         }
@@ -131,7 +130,7 @@ public:
             if (!lr.success)
             {
                 //linesearch failed
-                result.success = false;
+                result.status = SolverResultStatus.LinesearchFailed;
                 //restore
                 xc[] = xp[];
                 gc[] = gp[];
@@ -153,14 +152,14 @@ public:
             if (gnorm < xnorm * _options.gradientTolerance)
             {
                 //convergence
-                result.success = true;
+                result.status = SolverResultStatus.Success;
                 break;
             }
 
             if (loop >= _options.maxIterations)
             {
                 //iterations is over
-                result.success = false;
+                result.status = SolverResultStatus.OverMaxIterations;
                 break;
             }
 
@@ -174,7 +173,7 @@ public:
                 if (ys == 0)
                 {
                     //is the problem hard?
-                    result.success = false;
+                    result.status = SolverResultStatus.HardProblem;
                     break;
                 }
 
@@ -236,7 +235,11 @@ struct SolverOptions(T)
 }
 struct SolverResult(T)
 {
-    bool success;
+    SolverResultStatus status = SolverResultStatus.Unknown;
+    bool success() const pure nothrow @property
+    {
+        return status == SolverResultStatus.Success || status == SolverResultStatus.AlreadyMinimized;
+    }
 
     T firstCost;
     T finalCost;
@@ -253,6 +256,15 @@ struct SolverIteration(T)
     T cost;
     T paramNorm;
     T gradientNorm;
+}
+enum SolverResultStatus
+{
+    Unknown,
+    Success,
+    AlreadyMinimized,
+    LinesearchFailed,
+    OverMaxIterations,
+    HardProblem
 }
 
 unittest
