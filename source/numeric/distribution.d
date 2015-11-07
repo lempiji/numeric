@@ -3,14 +3,50 @@ module numeric.distribution;
 import std.math : PI;
 import numeric.math;
 
+struct NormalDistribution(T)
+{
+public:
+    this(T mu,  T sigma)
+    {
+        this.mu = mu;
+        this.sigma = sigma;
+    }
+
+public:
+    auto pdf(U)(U x)
+    {
+        return exp(-square(x - mu) / square(sigma)) / sqrt(2 * PI * square(sigma));
+    }
+
+    auto cdf(U)(U x)
+    {
+        import std.mathspecial: normalDistribution;
+        return normalDistribution(x);
+    }
+
+    auto cdfInverse(U)(U p)
+    {
+        import std.mathspecial: normalDistributionInverse;
+        return normalDistributionInverse(x);
+    }
+
+    auto logLikehood(U)(U x)
+    {
+        return -square(x - mu) / square(sigma) -log(sigma) - (log(PI) + log(2))/2;
+    }
+public:
+    T mu; //average
+    T sigma; //standard devision
+}
+
 struct JohnsonSUDistribution(T)
 {
 public:
-    this(T gamma, T lambda, T delta, T xi)
+    this(T gamma, T delta, T lambda, T xi)
     {
         this.gamma = gamma;
-        this.lambda = lambda;
         this.delta = delta;
+        this.lambda = lambda;
         this.xi = xi;
     }
 
@@ -18,7 +54,7 @@ public:
     auto pdf(U)(U x)
     {
         auto z = (x - xi) / lambda;
-        return delta / (lambda * sqrt(2*PI) * sqrt(z*z+1)) * exp(-0.5 * square(gamma + delta * asinh(z)));
+        return delta * exp(-0.5 * square(gamma + delta * asinh(z))) / (sqrt(2*PI) * (lambda * sqrt(square(z)+1)));
     }
 
     auto cdf(U)(U x)
@@ -42,14 +78,14 @@ public:
 
 public:
     T gamma;
-    T lambda;
     T delta;
+    T lambda;
     T xi;
 }
 
-JohnsonSUDistribution!T johnsonSUDistribution(T)(T gamma, T lambda, T delta, T xi)
+JohnsonSUDistribution!T johnsonSUDistribution(T)(T gamma, T delta, T lambda, T xi)
 {
-    return typeof(return)(gamma, lambda, delta, xi);
+    return typeof(return)(gamma, delta, lambda, xi);
 }
 
 unittest
