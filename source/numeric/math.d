@@ -528,3 +528,45 @@ T atanh(T)(in T x) @safe @nogc pure nothrow
     assert(std.math.approxEqual(z.d[0], 1.33333));
     assert(std.math.approxEqual(z.d[1], 0));
 }
+
+auto correl(T, U)(in T[] xs, in U[] ys)
+{
+    assert(xs.length == ys.length);
+    import std.traits;
+    alias Q = Unqual!(typeof(T.init * U.init));
+
+    immutable N = xs.length;
+    auto xa = sum(xs) / N;
+    auto ya = sum(ys) / N;
+
+    auto xv = T(0);
+    auto yv = U(0);
+    auto cv = Q(0);
+
+    foreach (i; 0 .. N)
+    {
+        auto tx = xs[i] - xa;
+        auto ty = ys[i] - ya;
+        cv += tx * ty;
+        xv += square(tx);
+        yv += square(ty);
+    }
+    return cv / (sqrt(xv) * sqrt(yv));
+}
+@safe unittest
+{
+    alias Var = Variable!(double, 2);
+
+    auto xa = Var(1, 0);
+    auto ya = Var(1, 1);
+
+    auto xs = new Var[3];
+    auto ys = new Var[3];
+    foreach (i, ref x; xs) x = xa * i;
+    foreach (i, ref y; ys) y = ya * i;
+
+    auto c = correl(xs, ys);
+    import std.algorithm, std.math;
+    assert(approxEqual(c.a, 1.0));
+    assert(equal!approxEqual(c.d[], [0.0, 0.0]));
+}
