@@ -52,13 +52,14 @@ public:
         _searcher.setCostFunction(_cost);
 
         //current
-        auto xc = x.dup;
-        auto gc = new T[NInput];
+        T[NInput] xc;
+        xc[] = x[];
+        T[NInput] gc;
         //prev
-        auto xp = new T[NInput];
-        auto gp = new T[NInput];
+        T[NInput] xp;
+        T[NInput] gp;
         //search vector
-        auto sv = new T[NInput];
+        T[NInput] sv;
 
         //L-BFGS
         static if (NLBFGS > 0)
@@ -66,18 +67,16 @@ public:
             static struct LBFGSIterateData
             {
                 T alpha;
-                T[] y;
-                T[] s;
+                T[NInput] y;
+                T[NInput] s;
                 T iys;
             }
 
-            auto buf = new LBFGSIterateData[NLBFGS];
+            LBFGSIterateData[NLBFGS] buf;
             auto bufPos = 0;
             foreach (ref d; buf)
             {
                 d.alpha = 0;
-                d.s = new T[NInput];
-                d.y = new T[NInput];
                 d.iys = 0;
             }
         }
