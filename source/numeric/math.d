@@ -539,19 +539,7 @@ auto correl(T, U)(in T[] xs, in U[] ys)
     auto xa = sum(xs) / N;
     auto ya = sum(ys) / N;
 
-    auto xv = T(0);
-    auto yv = U(0);
-    auto cv = Q(0);
-
-    foreach (i; 0 .. N)
-    {
-        auto tx = xs[i] - xa;
-        auto ty = ys[i] - ya;
-        cv += tx * ty;
-        xv += square(tx);
-        yv += square(ty);
-    }
-    return cv / (sqrt(xv) * sqrt(yv));
+    return correl(xs, ys, xa, ya);
 }
 @safe unittest
 {
@@ -569,4 +557,25 @@ auto correl(T, U)(in T[] xs, in U[] ys)
     import std.algorithm, std.math;
     assert(approxEqual(c.a, 1.0));
     assert(equal!approxEqual(c.d[], [0.0, 0.0]));
+}
+
+auto correl(T, U)(in T[] xs, in U[] ys, in T xa, in T ya)
+{
+    assert(xs.length == ys.length);
+    import std.traits;
+    alias Q = Unqual!(typeof(T.init * U.init));
+
+    auto xv = T(0);
+    auto yv = U(0);
+    auto cv = Q(0);
+
+    foreach (i; 0 .. xs.length)
+    {
+        auto tx = xs[i] - xa;
+        auto ty = ys[i] - ya;
+        cv += tx * ty;
+        xv += square(tx);
+        yv += square(ty);
+    }
+    return cv / (sqrt(xv) * sqrt(yv));
 }
