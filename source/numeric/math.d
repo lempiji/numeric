@@ -1,7 +1,9 @@
 module numeric.math;
 
 private static import std.math;
+
 private static import std.numeric;
+
 private import numeric.autodiff;
 
 auto square(T)(in T x) @safe @nogc pure nothrow
@@ -16,6 +18,7 @@ auto square(T)(in T x) @safe @nogc pure nothrow
     else
         return x * x;
 }
+
 unittest
 {
     alias Var = Variable!(double, 2);
@@ -43,7 +46,8 @@ auto dotProduct(T, U)(in T[] a, in U[] b)
     {
         assert(a.length == b.length);
 
-    	import std.traits;
+        import std.traits;
+
         alias Q = Unqual!(typeof(T.init * U.init));
         auto sum0 = Q(0), sum1 = Q(0);
 
@@ -51,7 +55,7 @@ auto dotProduct(T, U)(in T[] a, in U[] b)
         const smallblock_endp = all_endp & ~3;
         const bigblock_endp = all_endp & ~15;
 
-    	size_t i = 0;
+        size_t i = 0;
         auto ap = a[];
         auto bp = b[];
         for (; i != bigblock_endp; i += 16, ap = ap[16 .. $], bp = bp[16 .. $])
@@ -92,6 +96,7 @@ auto dotProduct(T, U)(in T[] a, in U[] b)
     else
         return std.numeric.dotProduct(a, b);
 }
+
 unittest
 {
     alias Var = Variable!(double, 3);
@@ -107,6 +112,7 @@ unittest
     assert(z.d[1] == 2);
     assert(z.d[2] == 4);
 }
+
 unittest
 {
     auto xs = new double[3];
@@ -118,6 +124,7 @@ unittest
     auto z = dotProduct(xs, ys);
     assert(z == 5);
 }
+
 unittest
 {
     alias Var = Variable!(double, 3);
@@ -140,24 +147,29 @@ unittest
     assert(z.d[1] == w.d[1]);
     assert(z.d[2] == w.d[2]);
 }
+
 unittest
 {
     alias Var = Variable!(double, 1000);
     auto xs = new Var[1000];
-    foreach (i; 0 .. xs.length) xs[i] = Var(i, i);
+    foreach (i; 0 .. xs.length)
+        xs[i] = Var(i, i);
 
     auto y = dotProduct(xs, xs);
     assert(y.a == 332833500);
-    foreach (i; 0 .. xs.length) assert(y.d[i] == 2 * i);
+    foreach (i; 0 .. xs.length)
+        assert(y.d[i] == 2 * i);
 }
 
 T sum(T)(in T[] xs) @safe @nogc pure nothrow
 {
     assert(xs.length > 0);
     T y = xs[0];
-    foreach (i; 1 .. xs.length) y += xs[i];
+    foreach (i; 1 .. xs.length)
+        y += xs[i];
     return y;
 }
+
 @safe pure nothrow unittest
 {
     alias Var = Variable!(double, 3);
@@ -184,9 +196,11 @@ T sumsq(T)(in T[] xs) @safe @nogc pure nothrow
 {
     assert(xs.length > 0);
     T y = square(xs[0]);
-    foreach (i; 1 .. xs.length) y += square(xs[i]);
+    foreach (i; 1 .. xs.length)
+        y += square(xs[i]);
     return y;
 }
+
 @safe pure nothrow unittest
 {
     alias Var = Variable!(double, 3);
@@ -210,6 +224,33 @@ T sumsq(T)(in T[] xs) @safe @nogc pure nothrow
     assert(sy == 0.56);
 }
 
+T sumxmy2(T, U)(in T[] xs, in U[] ys) @safe @nogc pure nothrow
+{
+    assert(xs.length > 0);
+    assert(xs.length == ys.length);
+
+    T sum = square(xs[0] - ys[0]);
+    foreach (i; 1 .. xs.length)
+        sum += square(xs[i] - ys[i]);
+    return sum;
+}
+
+unittest
+{
+    alias Var = Variable!(double, 3);
+    auto xs = new Var[3];
+    xs[0] = Var(0.2, 0);
+    xs[1] = Var(0.4, 1);
+    xs[2] = Var(0.6, 2);
+    auto ys = new Var[3];
+    ys[0] = Var(0.1, 0);
+    ys[1] = Var(0.2, 1);
+    ys[2] = Var(0.3, 2);
+
+    auto s = sumxmy2(xs, ys);
+    assert(s == square(xs[0] - ys[0]) + square(xs[1] - ys[1]) + square(xs[2] - ys[2]));
+}
+
 T sqrt(T)(in T x) @safe @nogc pure nothrow
 {
     static if (is(T : Variable!(U, N), U, size_t N))
@@ -223,6 +264,7 @@ T sqrt(T)(in T x) @safe @nogc pure nothrow
     else
         return std.math.sqrt(x);
 }
+
 @safe pure nothrow unittest
 {
     alias Var = Variable!(double, 2);
@@ -250,6 +292,7 @@ T exp(T)(in T x) @safe @nogc pure nothrow
     else
         return std.math.exp(x);
 }
+
 @safe pure nothrow unittest
 {
     alias Var = Variable!(double, 2);
@@ -276,6 +319,7 @@ T log(T)(in T x) @safe @nogc pure nothrow
     else
         return std.math.log(x);
 }
+
 @safe pure nothrow unittest
 {
     alias Var = Variable!(double, 2);
@@ -302,6 +346,7 @@ T sin(T)(in T x) @safe @nogc pure nothrow
     else
         return std.math.sin(x);
 }
+
 @safe pure nothrow unittest
 {
     alias Var = Variable!(double, 2);
@@ -329,6 +374,7 @@ T cos(T)(in T x) @safe @nogc pure nothrow
     else
         return std.math.cos(x);
 }
+
 @safe pure nothrow unittest
 {
     alias Var = Variable!(double, 2);
@@ -357,6 +403,7 @@ T tan(T)(in T x) @safe @nogc pure nothrow
     else
         return std.math.tan(x);
 }
+
 @safe pure nothrow unittest
 {
     alias Var = Variable!(double, 2);
@@ -383,6 +430,7 @@ T sinh(T)(in T x) @safe @nogc pure nothrow
     else
         return std.math.sinh(x);
 }
+
 @safe pure nothrow unittest
 {
     alias Var = Variable!(double, 2);
@@ -409,6 +457,7 @@ T cosh(T)(in T x) @safe @nogc pure nothrow
     else
         return std.math.cosh(x);
 }
+
 @safe pure nothrow unittest
 {
     alias Var = Variable!(double, 2);
@@ -436,6 +485,7 @@ T tanh(T)(in T x) @safe @nogc pure nothrow
     else
         return std.math.tanh(x);
 }
+
 @safe pure nothrow unittest
 {
     alias Var = Variable!(double, 2);
@@ -450,7 +500,6 @@ T tanh(T)(in T x) @safe @nogc pure nothrow
     assert(std.math.approxEqual(z.d[1], 0));
 }
 
-
 T asinh(T)(in T x) @safe @nogc pure nothrow
 {
     static if (is(T : Variable!(U, N), U, size_t N))
@@ -463,6 +512,7 @@ T asinh(T)(in T x) @safe @nogc pure nothrow
     else
         return std.math.asinh(x);
 }
+
 @safe pure nothrow unittest
 {
     alias Var = Variable!(double, 2);
@@ -489,6 +539,7 @@ T acosh(T)(in T x) @safe @nogc pure nothrow
     else
         return std.math.acosh(x);
 }
+
 @safe pure nothrow unittest
 {
     alias Var = Variable!(double, 2);
@@ -515,6 +566,7 @@ T atanh(T)(in T x) @safe @nogc pure nothrow
     else
         return std.math.atanh(x);
 }
+
 @safe pure nothrow unittest
 {
     alias Var = Variable!(double, 2);
@@ -533,6 +585,7 @@ auto correl(T, U)(in T[] xs, in U[] ys)
 {
     assert(xs.length == ys.length);
     import std.traits;
+
     alias Q = Unqual!(typeof(T.init * U.init));
 
     immutable N = xs.length;
@@ -541,6 +594,7 @@ auto correl(T, U)(in T[] xs, in U[] ys)
 
     return correl(xs, ys, xa, ya);
 }
+
 @safe unittest
 {
     alias Var = Variable!(double, 2);
@@ -550,11 +604,14 @@ auto correl(T, U)(in T[] xs, in U[] ys)
 
     auto xs = new Var[3];
     auto ys = new Var[3];
-    foreach (i, ref x; xs) x = xa * i;
-    foreach (i, ref y; ys) y = ya * i;
+    foreach (i, ref x; xs)
+        x = xa * i;
+    foreach (i, ref y; ys)
+        y = ya * i;
 
     auto c = correl(xs, ys);
     import std.algorithm, std.math;
+
     assert(approxEqual(c.a, 1.0));
     assert(equal!approxEqual(c.d[], [0.0, 0.0]));
 }
@@ -563,6 +620,7 @@ auto correl(T, U)(in T[] xs, in U[] ys, in T xa, in T ya)
 {
     assert(xs.length == ys.length);
     import std.traits;
+
     alias Q = Unqual!(typeof(T.init * U.init));
 
     auto xv = T(0);
