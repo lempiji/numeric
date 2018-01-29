@@ -1,5 +1,15 @@
 module numeric.autodiff;
 
+enum isVariable(T) = is(T : Variable!(U, N), U, size_t N);
+unittest
+{
+    static assert(isVariable!(Variable!(float, 3)));
+    static assert(isVariable!(Variable!(double, 2)));
+    static assert(!isVariable!float);
+    static assert(!isVariable!double);
+    static assert(!isVariable!string);
+}
+
 struct Variable(T, size_t N)
 {
 public:
@@ -35,7 +45,8 @@ public:
             t.a = -a;
             return t;
         }
-        else static assert(false);
+        else
+            static assert(false);
     }
 
     Variable opBinary(string op)(in Variable r) @safe @nogc const pure nothrow
@@ -62,7 +73,8 @@ public:
             t.d[] = (d[] - a * u * r.d[]) * u;
             t.a = a * u;
         }
-        else static assert(false);
+        else
+            static assert(false);
         return t;
     }
 
@@ -89,7 +101,8 @@ public:
             t.d[] = d[] / r;
             t.a = a / r;
         }
-        else static assert(false);
+        else
+            static assert(false);
         return t;
     }
 
@@ -155,6 +168,7 @@ public:
 @safe pure nothrow unittest
 {
     import std.algorithm;
+
     alias Var = Variable!(double, 3);
     auto x = Var(1);
     assert(x.a == 1);
@@ -261,7 +275,6 @@ public:
     assert(y.d[0] == -2);
     assert(y.a == 2 / x.a);
 }
-
 
 @safe pure nothrow unittest
 {
