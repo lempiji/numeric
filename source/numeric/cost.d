@@ -142,7 +142,7 @@ unittest
 unittest
 {
     import numeric.functions;
-    import std.numeric: approxEqual;
+    import std.math: approxEqual;
 
     RosenBrockFunction fn;
     CostFunction!(double, 2) cost = new NumericDiffCostFunction!(RosenBrockFunction, double, 2)(fn);
